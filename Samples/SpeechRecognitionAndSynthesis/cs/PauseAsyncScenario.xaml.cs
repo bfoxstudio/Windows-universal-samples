@@ -232,13 +232,22 @@ namespace SpeechAndTTS
                 // This prevents an exception from occurring.
                 if (speechRecognizer.State == SpeechRecognizerState.Idle)
                 {
-                    recognizeButtonText.Text = " Stop Continuous Recognition";
-                    btnEmailGrammar.IsEnabled = true;
-                    btnPhoneGrammar.IsEnabled = true;
-                    infoBoxes.Visibility = Visibility.Visible;
-                    isListening = true;
+                    // Reset the text to prompt the user.
+                    try
+                    {
+                        await speechRecognizer.ContinuousRecognitionSession.StartAsync();
 
-                    await speechRecognizer.ContinuousRecognitionSession.StartAsync();
+                        recognizeButtonText.Text = " Stop Continuous Recognition";
+                        btnEmailGrammar.IsEnabled = true;
+                        btnPhoneGrammar.IsEnabled = true;
+                        infoBoxes.Visibility = Visibility.Visible;
+                        isListening = true;
+                    }
+                    catch (Exception ex)
+                    {
+                        var messageDialog = new Windows.UI.Popups.MessageDialog(ex.Message, "Exception");
+                        await messageDialog.ShowAsync();
+                    }
                 }
             }
             else
@@ -268,7 +277,7 @@ namespace SpeechAndTTS
         {
             // Update UI, disabling buttons so the user can't interrupt.
             updateUI(false);
-            var newButtonText = "";
+            string newButtonText = "";
 
             long start = DateTime.Now.Ticks;
 
@@ -295,7 +304,7 @@ namespace SpeechAndTTS
                 }
                 
                 // Recompile with the new constraints and resume the session again.
-                var result = await speechRecognizer.CompileConstraintsAsync();
+                SpeechRecognitionCompilationResult result = await speechRecognizer.CompileConstraintsAsync();
                 if (result.Status != SpeechRecognitionResultStatus.Success)
                 {
                     // Disable the recognition buttons.
@@ -334,7 +343,7 @@ namespace SpeechAndTTS
         {
             // Update UI, disabling buttons so the user can't interrupt.
             updateUI(false);
-            var newButtonText = "";
+            string newButtonText = "";
 
             long start = DateTime.Now.Ticks;
 
@@ -361,7 +370,7 @@ namespace SpeechAndTTS
                 }
 
                 // Recompile with the new constraints and resume the session again.
-                var result = await speechRecognizer.CompileConstraintsAsync();
+                SpeechRecognitionCompilationResult result = await speechRecognizer.CompileConstraintsAsync();
                 if (result.Status != SpeechRecognitionResultStatus.Success)
                 {
                     // Disable the recognition buttons.
